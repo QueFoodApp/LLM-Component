@@ -3,11 +3,11 @@ import pandas as pd
 import numpy as np
 
 def load_model():
-    food_model = joblib.load("ModelCollection/food_model.pkl")
-    restaurant_model = joblib.load("ModelCollection/restaurant_model.pkl")
-    scaler = joblib.load("ModelCollection/scaler.pkl")
-    food_encoder = joblib.load("ModelCollection/food_encoder.pkl")
-    restaurant_encoder = joblib.load("ModelCollection/restaurant_encoder.pkl")
+    food_model = joblib.load("FoodSuggestion/ModelCollection/food_model.pkl")
+    restaurant_model = joblib.load("FoodSuggestion/ModelCollection/restaurant_model.pkl")
+    scaler = joblib.load("FoodSuggestion/ModelCollection/scaler.pkl")
+    food_encoder = joblib.load("FoodSuggestion/ModelCollection/food_encoder.pkl")
+    restaurant_encoder = joblib.load("FoodSuggestion/ModelCollection/restaurant_encoder.pkl")
     return food_model, restaurant_model, scaler, food_encoder, restaurant_encoder
 
 
@@ -16,7 +16,7 @@ def find_nearest_calorie_value(calories, available_calories):
 
 
 def recommend_food(calories):
-    df_food = pd.read_csv("../data/food_data_encoded.csv")
+    df_food = pd.read_csv("data/food_data_encoded.csv")
     available_calories = df_food['estimated_calories'].unique()
     closest_calories = find_nearest_calorie_value(calories, available_calories)
 
@@ -26,7 +26,13 @@ def recommend_food(calories):
     predicted_food_label = food_model.predict(input_calories)
     predicted_restaurant_label = restaurant_model.predict(input_calories)
 
-    df_result = df_food[(df_food['food_name_encoded'] == predicted_food_label[0]) & (df_food['restaurant_id_encoded'] == predicted_restaurant_label[0])]
+    df_subfood = df_food[df_food['food_name_encoded'] == predicted_food_label[0]].head()
+
+    df_raw_rest = df_food[df_food['restaurant_id_encoded'] == predicted_restaurant_label[0]]
+    df_rest = df_raw_rest[df_raw_rest['estimated_calories'] < df_subfood.iloc[0]['estimated_calories']].head()
+
+    df_result = pd.concat([df_subfood, df_rest]).drop_duplicates(subset=['food_name'], keep="first")
+
     result_json = df_result.to_json(orient='records')
 
     return result_json

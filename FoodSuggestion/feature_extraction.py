@@ -43,15 +43,15 @@ def calculate_meal_calories(age, gender):
         weight = 85
         height = 178
         multiplier = 1.55
-        lower_factor = 0.9
-        upper_factor = 1.15
+        lower_factor = 0.8
+        upper_factor = 1.0
         gender_offset = 5
     elif gender in female_keywords:
         weight = 70
         height = 170
         multiplier = 1.45
-        lower_factor = 0.85
-        upper_factor = 1.08
+        lower_factor = 0.7
+        upper_factor = 1.00
         gender_offset = -161
     else:
         raise ValueError("Gender value not supported in list!")
@@ -62,7 +62,6 @@ def calculate_meal_calories(age, gender):
 
     lower_calories = meal_calories * lower_factor
     upper_calories = meal_calories * upper_factor
-
     return round(lower_calories), round(upper_calories)
 
 
