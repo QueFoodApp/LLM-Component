@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.10
 
 WORKDIR /app
 
@@ -10,6 +10,6 @@ COPY . .
 
 ENV GOOGLE_APPLICATION_CREDENTIALS=/app/service-account.json
 
-EXPOSE 5678
+EXPOSE 8080
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5678"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
