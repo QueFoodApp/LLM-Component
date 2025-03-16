@@ -17,20 +17,25 @@ MODEL_FILES = [
 
 
 def download_models_from_gcs():
-    client = storage.Client()
-    bucket = client.bucket(GCS_BUCKET_NAME)
+    try:
+        print("Initializing Google Cloud Storage client...")
+        client = storage.Client()
+        bucket = client.bucket(GCS_BUCKET_NAME)
+        os.makedirs(LOCAL_MODEL_DIR, exist_ok=True)
 
-    os.makedirs(LOCAL_MODEL_DIR, exist_ok=True)
+        for model_file in MODEL_FILES:
+            local_path = os.path.join(LOCAL_MODEL_DIR, model_file)
+            blob = bucket.blob(model_file)
 
-    for model_file in MODEL_FILES:
-        local_path = os.path.join(LOCAL_MODEL_DIR, model_file)
-        blob = bucket.blob(model_file)
-        blob.download_to_filename(local_path)
-        print(f"Downloaded {model_file} from GCS to {local_path}")
+            print(f"Downloading {model_file} from GCS...")
+            blob.download_to_filename(local_path)
+            print(f"Downloaded {model_file} to {local_path}")
+
+    except Exception as e:
+        print(f"Error downloading models: {e}")
 
 
 download_models_from_gcs()
-
 
 def load_model():
     food_model = joblib.load(os.path.join(LOCAL_MODEL_DIR, "food_model.pkl"))
@@ -40,10 +45,8 @@ def load_model():
     restaurant_encoder = joblib.load(os.path.join(LOCAL_MODEL_DIR, "restaurant_encoder.pkl"))
     return food_model, restaurant_model, scaler, food_encoder, restaurant_encoder
 
-
 def find_nearest_calorie_value(calories, available_calories):
     return min(available_calories, key=lambda x: abs(x - calories))
-
 
 def recommend_food(calories):
     df_food = pd.read_csv("data/food_data_encoded.csv")
