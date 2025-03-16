@@ -6,6 +6,10 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY . .
+
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/service-account.json
+
 EXPOSE 5678
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5678"]

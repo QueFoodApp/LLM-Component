@@ -1,13 +1,43 @@
 import joblib
 import pandas as pd
 import numpy as np
+from google.cloud import storage
+import os
+
+
+GCS_BUCKET_NAME = 'quefoodhall-food-recommendations'
+LOCAL_MODEL_DIR = 'FoodSuggestion/ModelCollection'
+MODEL_FILES = [
+    "food_model.pkl",
+    "restaurant_model.pkl",
+    "scaler.pkl",
+    "food_encoder.pkl",
+    "restaurant_encoder.pkl"
+]
+
+
+def download_models_from_gcs():
+    client = storage.Client()
+    bucket = client.bucket(GCS_BUCKET_NAME)
+
+    os.makedirs(LOCAL_MODEL_DIR, exist_ok=True)
+
+    for model_file in MODEL_FILES:
+        local_path = os.path.join(LOCAL_MODEL_DIR, model_file)
+        blob = bucket.blob(model_file)
+        blob.download_to_filename(local_path)
+        print(f"Downloaded {model_file} from GCS to {local_path}")
+
+
+download_models_from_gcs()
+
 
 def load_model():
-    food_model = joblib.load("FoodSuggestion/ModelCollection/food_model.pkl")
-    restaurant_model = joblib.load("FoodSuggestion/ModelCollection/restaurant_model.pkl")
-    scaler = joblib.load("FoodSuggestion/ModelCollection/scaler.pkl")
-    food_encoder = joblib.load("FoodSuggestion/ModelCollection/food_encoder.pkl")
-    restaurant_encoder = joblib.load("FoodSuggestion/ModelCollection/restaurant_encoder.pkl")
+    food_model = joblib.load(os.path.join(LOCAL_MODEL_DIR, "food_model.pkl"))
+    restaurant_model = joblib.load(os.path.join(LOCAL_MODEL_DIR, "restaurant_model.pkl"))
+    scaler = joblib.load(os.path.join(LOCAL_MODEL_DIR, "scaler.pkl"))
+    food_encoder = joblib.load(os.path.join(LOCAL_MODEL_DIR, "food_encoder.pkl"))
+    restaurant_encoder = joblib.load(os.path.join(LOCAL_MODEL_DIR, "restaurant_encoder.pkl"))
     return food_model, restaurant_model, scaler, food_encoder, restaurant_encoder
 
 
